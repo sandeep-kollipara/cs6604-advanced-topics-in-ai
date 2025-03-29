@@ -1107,9 +1107,146 @@ result2 = chain.invoke({
 
 result2
 
+from langchain.schema.agent import AgentFinish
+def run_agent(user_input):
+    intermediate_steps = []
+    while True:
+        result = chain.invoke({
+            "input": user_input,
+            "agent_scratchpad": format_to_openai_functions(intermediate_steps)
+        })
+        if isinstance(result, AgentFinish):
+            return result
+        tool = {
+            "search_wikipedia": search_wikipedia,
+            "get_current_temperature": get_current_temperature,
+        }[result.tool]
+        observation = tool.run(result.tool_input)
+        intermediate_steps.append((result, observation))
+
+from langchain.schema.runnable import RunnablePassthrough
+agent_chain = RunnablePassthrough.assign(
+    agent_scratchpad= lambda x: format_to_openai_functions(x["intermediate_steps"])
+) | chain
+
+def run_agent(user_input):
+    intermediate_steps = []
+    while True:
+        result = agent_chain.invoke({
+            "input": user_input,
+            "intermediate_steps": intermediate_steps
+        })
+        if isinstance(result, AgentFinish):
+            return result
+        tool = {
+            "search_wikipedia": search_wikipedia,
+            "get_current_temperature": get_current_temperature,
+        }[result.tool]
+        observation = tool.run(result.tool_input)
+        intermediate_steps.append((result, observation))
+
+run_agent("what is the weather is sf?")
+
+run_agent("what is langchain?")
+
+from langchain.agents import AgentExecutor
+agent_executor = AgentExecutor(agent=agent_chain, tools=tools, verbose=True)
+
+agent_executor.invoke({"input": "what is langchain?"})
+
+agent_executor.invoke({"input": "my name is bob"})
+
+agent_executor.invoke({"input": "what is my name"})
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are helpful but sassy assistant"),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("user", "{input}"),
+    MessagesPlaceholder(variable_name="agent_scratchpad")
+])
+
+agent_chain = RunnablePassthrough.assign(
+    agent_scratchpad= lambda x: format_to_openai_functions(x["intermediate_steps"])
+) | prompt | model | OpenAIFunctionsAgentOutputParser() # Same as before but extended for 'chain'
+
+from langchain.memory import ConversationBufferMemory
+memory = ConversationBufferMemory(return_messages=True,memory_key="chat_history")
+
+agent_executor = AgentExecutor(agent=agent_chain, tools=tools, verbose=True, memory=memory)
+
+agent_executor.invoke({"input": "my name is bob"})
+
+agent_executor.invoke({"input": "whats my name"})
+
+agent_executor.invoke({"input": "whats the weather in sf?"})
+
+@tool
+def create_your_own(query: str) -> str:
+    """This function can do whatever you would like once you fill it in """
+    print(type(query))
+    return query[::-1]
+
+tools = [get_current_temperature, search_wikipedia, create_your_own]
+
+import panel as pn  # GUI
+
+pn.extension()
+import panel as pn
+import param
 
 
+class cbfs(param.Parameterized):
 
+    def __init__(self, tools, **params):
+        super(cbfs, self).__init__(**params)
+        self.panels = []
+        self.functions = [format_tool_to_openai_function(f) for f in tools]
+        self.model = ChatOpenAI(temperature=0).bind(functions=self.functions)
+        self.memory = ConversationBufferMemory(return_messages=True, memory_key="chat_history")
+        self.prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are helpful but sassy assistant"),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("user", "{input}"),
+            MessagesPlaceholder(variable_name="agent_scratchpad")
+        ])
+        self.chain = RunnablePassthrough.assign(
+            agent_scratchpad=lambda x: format_to_openai_functions(x["intermediate_steps"])
+        ) | self.prompt | self.model | OpenAIFunctionsAgentOutputParser()
+        self.qa = AgentExecutor(agent=self.chain, tools=tools, verbose=False, memory=self.memory)
 
+    def convchain(self, query):
+        if not query:
+            return
+        inp.value = ''
+        result = self.qa.invoke({"input": query})
+        self.answer = result['output']
+        self.panels.extend([
+            pn.Row('User:', pn.pane.Markdown(query, width=450)),
+            pn.Row('ChatBot:', pn.pane.Markdown(self.answer, width=450, styles={'background-color': '#F6F6F6'}))
+        ])
+        return pn.WidgetBox(*self.panels, scroll=True)
 
-# *************** END ***************
+    def clr_history(self, count=0):
+        self.chat_history = []
+        return
+
+cb = cbfs(tools)
+
+inp = pn.widgets.TextInput(placeholder='Enter text here…')
+
+conversation = pn.bind(cb.convchain, inp)
+
+tab1 = pn.Column(
+    pn.Row(inp),
+    pn.layout.Divider(),
+    pn.panel(conversation, loading_indicator=True, height=400),
+    pn.layout.Divider(),
+)
+
+dashboard = pn.Column(
+    pn.Row(pn.pane.Markdown('# QnA_Bot')),
+    pn.Tabs(('Conversation', tab1))
+)
+dashboard
+
+        # *************** END ***************
