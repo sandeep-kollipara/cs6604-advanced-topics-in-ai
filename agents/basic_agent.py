@@ -83,7 +83,7 @@ class ChatAgent:
         functions = [convert_to_openai_function(f) for f in tools]
         model = ChatOpenAI(model='gpt-4o', temperature=0).bind(functions=functions)
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are helpful but sassy assistant"),
+            ("system", f"{starter}"),
             MessagesPlaceholder(variable_name="chat_history"),  # Used with ConversationalBufferMemory
             ("user", "{input}"),
             MessagesPlaceholder(variable_name="agent_scratchpad")
@@ -95,9 +95,11 @@ class ChatAgent:
         self.memory = ConversationBufferMemory(return_messages=True, memory_key="chat_history")
         agent_executor = AgentExecutor(agent=agent_chain, tools=tools, verbose=False, memory=self.memory) # Memory integrated
         self.model = agent_executor
+        print('initializaed')
 
     def __call__(self, message):
         self.execute(message)
 
     def execute(self, user_input): # AKA agent_executor(), remembers chat history
         self.model.invoke({"input": f"{user_input}"})
+        print('executing')
