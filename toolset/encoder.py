@@ -1,3 +1,3 @@
 # *************** Data Encoding Tools ***************
 
-from agents.basic_agent import *
+from agents.react_agent import *

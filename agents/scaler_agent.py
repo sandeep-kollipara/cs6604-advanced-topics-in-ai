@@ -1,0 +1,55 @@
+# *************** EXPloratory Data Analysis AGENT ***************
+
+import pandas as pd
+from agents.base_agent import BaseAgent
+from toolset.scaler import standardization, normalization
+from templates.scaling import prompt
+from pydantic import BaseModel, Field
+from typing import List
+from langchain.tools import tool
+
+
+class Scaling(BaseModel):
+    numerical_features: List[str] = Field(..., description="List of column names of the numerical features in the dataframe")
+
+
+class ScalerAgent(BaseAgent):
+    """
+    This is the ScalerAgent which conducts standardization and normalization on numerical features of a dataframe.
+    It is called by the RouterAgent upon receiving a data scaling task.
+    """
+
+    # Field(s) (Class)
+
+    # Public Method(s)
+
+    # Private Method(s)
+    @staticmethod
+    @tool(args_schema=Scaling)
+    def __standardization(numerical_features):
+        """
+        Applies standardization or scaling to the numerical features of the dataframe
+        """
+        standardization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+    
+    @staticmethod
+    @tool(args_schema=Scaling)
+    def __normalization(numerical_features):
+        """
+        Applies normalization to the numerical features of the dataframe
+        """
+        normalization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+
+    # Constructor(s)
+    def __init__(self):
+        super().__init__(starter=prompt, tool_dict={'standardization':self.__standardization, 
+                                                    'normalization':self.__normalization})
+
+    # Call Override(s)
+    def __call__(self, message):
+        super().__call__(message)
+
+    # String Override(s)
+    def __str__(self):
+        print("Text temporary.")
+
