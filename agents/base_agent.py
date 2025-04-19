@@ -29,7 +29,8 @@ class BaseAgent(BasicAgent):
 
     # Field(s) (Class)
     chat_history = []
-    dataframe = pd.DataFrame()
+    #dataframe = pd.DataFrame() # Shifting to instance var from class var
+    dataframe_backup = pd.DataFrame()
     train = pd.DataFrame()
     test = pd.DataFrame()
     validation = pd.DataFrame()
@@ -44,11 +45,13 @@ class BaseAgent(BasicAgent):
     # Constructor(s)
     def __init__(self, starter="You are a data analyst with tools to preprocess and manage dataframes", tool_dict={}):
         super().__init__(starter=starter, tool_dict=tool_dict) # Passthrough
+        self.dataframe = pd.DataFrame() # Instance var
 
     # Call Override(s)
     def __call__(self, message):
         result = self.model2.invoke({"input": f"{message}"})
-        self.chat_history += result
+        self.chat_history += [result]
+        return result
 
     # String Override(s)
     def __str__(self):
