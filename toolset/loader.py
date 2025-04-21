@@ -31,7 +31,7 @@ def save_data_to_file(dataframe: pd.DataFrame, filename: str) -> dict:
 def load_csv(filename: str) -> dict:
     """Check if .CSV file is present, load it into the dataframe and return it"""
     try:
-        df = pd.read_csv(r'/bb/'+filename)
+        df = pd.read_csv(r'./bb/'+filename)
     except:
         return 'Error loading file'
     #return f'Verified the file as CSV and loaded it: {df}'

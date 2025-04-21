@@ -1,11 +1,9 @@
 # *************** Data Cleaning Tools ***************
 
-from pydantic import BaseModel, Field
-from langchain.tools import tool
 import pandas
 import collections
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 
 
 def EliminateConstantFeatures(dataframe):
@@ -98,7 +96,7 @@ def EliminateFeaturesWithNearZeroVariance(dataframe):
           " after Features with Near Zero Variance Elimination.");
     return dataframe;
 
-def EliminateFeaturesWithHighNonnumericUniqueValues(dataframe, percentage, absolute):
+def EliminateFeaturesWithHighNonnumericUniqueValues(dataframe, percentage):#, absolute): # Removed the 'absolute' input
     featurelist=dataframe.columns;
     numerics=['int16', 'int32', 'int64', 'float16', 'float32', 'float64'];
     nonnumfeaturelist=featurelist.drop(dataframe.select_dtypes(include=numerics).columns);
@@ -107,16 +105,16 @@ def EliminateFeaturesWithHighNonnumericUniqueValues(dataframe, percentage, absol
         if len(dataframe[feature].unique())/len(dataframe) > percentage/100:
             dataframe.drop([feature], axis=1, inplace=True);
             print("Feature "+str(feature)+" dropped.");
-        elif len(dataframe[feature].unique()) > absolute:
-            dataframe.drop([feature], axis=1, inplace=True);
-            print("Feature "+str(feature)+" dropped.");
+        #elif len(dataframe[feature].unique()) > absolute:
+        #    dataframe.drop([feature], axis=1, inplace=True);
+        #    print("Feature "+str(feature)+" dropped.");
     print("Num. of features reduced to "+str(len(dataframe.columns))+\
           " from "+str(dfcol)+\
           " after Features with High Non-numeric Unique Values Elimination.");
     return dataframe;
 
-def EliminateCorrelatedFeatures(dataframe, threshold):
-    correlation_matrix=dataframe.corr().reset_index();
+def EliminateCorrelatedFeatures(dataframe, threshold): # Modified to eliminate highly negative correlated features as well
+    correlation_matrix=dataframe.corr(numeric_only=True).reset_index(); # Added numeric_only=True
     dfcol=len(dataframe.columns);
     side=len(correlation_matrix);
     featurelist=correlation_matrix.columns;
@@ -132,33 +130,52 @@ def EliminateCorrelatedFeatures(dataframe, threshold):
                 dataframe.drop([correlation_matrix['index'][i]], axis=1, inplace=True);
                 print("Feature "+str(correlation_matrix['index'][i])+" dropped.");
                 newfeaturelist=newfeaturelist.drop(correlation_matrix['index'][i]);
+            elif correlation_matrix[feature][i] < -threshold \
+            and feature in newfeaturelist \
+            and correlation_matrix['index'][i] in newfeaturelist:
+                dataframe.drop([correlation_matrix['index'][i]], axis=1, inplace=True);
+                print("Feature "+str(correlation_matrix['index'][i])+" dropped.");
+                newfeaturelist=newfeaturelist.drop(correlation_matrix['index'][i]);
             i+=1;
         j-=1;
     print("Num. of features reduced to "+str(len(dataframe.columns))+\
           " from "+str(dfcol)+" after Correlated Features Elimination.");
     return dataframe;
 
-def MissingValueTreatment(dataframe):
+def MissingValueTreatment(dataframe, features=[]): # 'features' added
     featurelist=dataframe.columns;
+    if set(features).difference(set(featurelist)) != set(): # Validation of 'features' input
+        return dataframe, 'Error: Unknown feature provided as input'
+    elif features==[]: features = featurelist
+    else: featurelist = features
     integertypes=['int16', 'int32', 'int64'];
     floattypes=['float16', 'float32', 'float64'];
     numerics=list(set(integertypes+floattypes));
-    intfeaturelist=dataframe.select_dtypes(include=integertypes).columns;
-    floatfeaturelist=dataframe.select_dtypes(include=floattypes).columns;
-    nonnumfeaturelist=featurelist.drop(dataframe.select_dtypes(include=numerics).columns);
+    #intfeaturelist=dataframe.select_dtypes(include=integertypes).columns;
+    intfeaturelist=list(set(dataframe.select_dtypes(include=integertypes).columns).intersection(set(features))); # Modified for 'features' input
+    #floatfeaturelist=dataframe.select_dtypes(include=floattypes).columns;
+    floatfeaturelist=list(set(dataframe.select_dtypes(include=floattypes).columns).intersection(set(features))); # Modified for 'features' input
+    #nonnumfeaturelist=featurelist.drop(dataframe.select_dtypes(include=numerics).columns);
+    nonnumfeaturelist=featurelist.drop(list(set(dataframe.select_dtypes(include=numerics).columns).intersection(set(features)))); # Modified for 'features' input
     for feature in intfeaturelist:
         dataframe[feature]=dataframe[feature].fillna(round(dataframe[feature].mean()));
     for feature in floatfeaturelist:
         dataframe[feature]=dataframe[feature].fillna(dataframe[feature].mean());
     for feature in nonnumfeaturelist:
-        dataframe[feature]=dataframe[feature].fillna(dataframe[feature].mode().item());
+        #dataframe[feature]=dataframe[feature].fillna(dataframe[feature].mode().item());
+        try:
+            dataframe[feature]=dataframe[feature].fillna(dataframe[feature].mode().item());
+        except ValueError: # No mode exists for the feature
+            pass
+        except:
+            return dataframe, 'Error: Could not replace nulls for a categorical feature.'
     return dataframe;
 
-def OutlierTreatment(dataframe):
+def OutlierTreatment(dataframe, percentile=1): #): # 'percentile' added
     floattypes=['float16', 'float32', 'float64'];
     floatfeaturelist=dataframe.select_dtypes(include=floattypes).columns;
     for feature in floatfeaturelist:
-        dataframe[feature].loc[dataframe[feature] < dataframe[feature].quantile(0.01)]=dataframe[feature].quantile(0.01);
-        dataframe[feature].loc[dataframe[feature] > dataframe[feature].quantile(0.99)]=dataframe[feature].quantile(0.99);
+        dataframe[feature].loc[dataframe[feature] < dataframe[feature].quantile(percentile/100)]=dataframe[feature].quantile(percentile/100);
+        dataframe[feature].loc[dataframe[feature] > dataframe[feature].quantile(1-percentile/100)]=dataframe[feature].quantile(1-percentile/100);
     return dataframe;
 

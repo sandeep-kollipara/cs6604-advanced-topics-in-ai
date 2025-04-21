@@ -1,9 +1,9 @@
 # *************** Loader Agent ***************
 
 from agents.base_agent import BaseAgent
-from agents.router_agent import RouterAgent
+import agents.router_agent
 from toolset.loader import identify_and_load_file, save_data_to_file
-from templates.scaling import prompt
+from templates.loading import prompt
 from pydantic import BaseModel, Field
 from typing import Optional
 from langchain.tools import tool
@@ -31,12 +31,13 @@ class LoaderAgent(BaseAgent):
     # Private Method(s)
     @staticmethod
     @tool(args_schema=Loading)
-    def __identify_and_load_file(approx_filename):
+    def __identify_and_load_file(approx_filename, memo=''):
         """
         Identifies the file with given filename and returns the closest match for filename if not found. If found, it loads and returns the dataframe
         """
         LoaderAgent.dataframe = identify_and_load_file(approx_filename)
-        return LoaderAgent.dataframe
+        LoaderAgent.memo = memo
+        return f'File loaded successfully {LoaderAgent.dataframe} with memo: {LoaderAgent.memo}'
     
     @staticmethod
     @tool(args_schema=Saving)
@@ -44,19 +45,20 @@ class LoaderAgent(BaseAgent):
         """
         Saves the dataframe as a CSV file with the provided filename
         """
-        save_data_to_file(LoaderAgent.dataframe)
+        save_data_to_file(LoaderAgent.dataframe, filename)
 
 
     # Constructor(s)
     def __init__(self, dataframe):
         super().__init__(starter=prompt, tool_dict={'identify_and_load_file':self.__identify_and_load_file, 
                                                     'save_data_to_file':self.__save_data_to_file})
-        self.dataframe = dataframe
+        LoaderAgent.dataframe = self.dataframe = dataframe # Apparently both do not reference the same variable
 
     # Call Override(s)
     def __call__(self, message):
         super().__call__(message)
-        callAgent = RouterAgent(self.dataframe)
+        self.dataframe = LoaderAgent.dataframe # Apparently both do not reference the same variable
+        callAgent = agents.router_agent.RouterAgent(self.dataframe)
         return callAgent
 
     # String Override(s)

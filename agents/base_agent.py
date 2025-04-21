@@ -10,6 +10,7 @@ from agents.react_agent import BasicAgent
 #class DataFrameModel(BaseModel):
 #   chat_history: List[str]
 #   dataframe: pd.DataFrame
+#   memo: str
 #   train: pd.DataFrame
 #   test: pd.DataFrame
 #   validation: pd.DataFrame
@@ -30,6 +31,7 @@ class BaseAgent(BasicAgent):
     # Field(s) (Class)
     chat_history = []
     #dataframe = pd.DataFrame() # Shifting to instance var from class var
+    memo = ''
     dataframe_backup = pd.DataFrame()
     train = pd.DataFrame()
     test = pd.DataFrame()

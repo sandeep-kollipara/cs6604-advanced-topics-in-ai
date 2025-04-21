@@ -1,9 +1,13 @@
 # *************** Router Agent ***************
 
 from agents.base_agent import BaseAgent
-from agents.loader_agent import LoaderAgent
-from agents.scaler_agent import ScalerAgent
-from agents.encoder_agent import EncoderAgent
+import agents.dimreducer_agent
+import agents.loader_agent
+import agents.scaler_agent
+import agents.encoder_agent
+import agents.explorer_agent
+import agents.cleaner_agent
+import agents.dimreducer_agent
 from templates.routing import prompt
 from pydantic import BaseModel, Field
 from langchain.tools import tool
@@ -86,17 +90,17 @@ class RouterAgent(BaseAgent):
             if self.before == None: return self
             else: return self.before
         elif self.tag == 'load_save':
-            callAgent = LoaderAgent()
-        #elif self.tag == 'exploration':
-        #    callAgent = ExpAgent()
-        #elif self.tag == 'cleaning':
-        #    callAgent = CleanerAgent()
+            callAgent = agents.loader_agent.LoaderAgent(self.dataframe)
+        elif self.tag == 'exploration':
+            callAgent = agents.explorer_agent.ExplorerAgent(self.dataframe)
+        elif self.tag == 'cleaning':
+            callAgent = agents.cleaner_agent.CleanerAgent(self.dataframe)
         elif self.tag == 'scaling':
-            callAgent = ScalerAgent()
+            callAgent = agents.scaler_agent.ScalerAgent(self.dataframe)
         elif self.tag == 'encoding':
-            callAgent = EncoderAgent()
-        #elif self.tag == 'dimension_reduction':
-        #    callAgent = DimReduceAgent()
+            callAgent = agents.encoder_agent.EncoderAgent(self.dataframe)
+        elif self.tag == 'dimension_reduction':
+            callAgent = agents.dimreducer_agent.DimReducerAgent(self.dataframe)
         #elif self.tag == 'feature_selection':
         #    callAgent = FeatSelectAgent()
         #elif self.tag == 'manipulation':
