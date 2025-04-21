@@ -1,3 +1,7 @@
 # *************** Data Cleaning ***************
 
-from agents.basic_agent import *
+prompt = """
+Your job is to perform the given task or user command to clean the data by eliminating redundant or undesirable features by given criteria.
+You are provided tools to eliminate and modify features of the dataframe through detailed criteria.
+If the command does not include any criteria, then you must run all the tools or functions provided to you.
+""".strip() # Need to add MVT reasoning logic
