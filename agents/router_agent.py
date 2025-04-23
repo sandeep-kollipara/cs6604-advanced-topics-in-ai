@@ -44,7 +44,6 @@ class RouterAgent(BaseAgent):
     # Field(s) (Class)
     tag = None # Placeholder for assigned task description
     latest = None # Placeholder for the latest RouterAgent instance
-    router_states = []
 
     # Public Method(s)
 
@@ -74,8 +73,8 @@ class RouterAgent(BaseAgent):
     def __init__(self, dataframe):
         super().__init__(starter=prompt, tool_dict={'routing':self.__routing})
         self.dataframe = dataframe
-        self.before = self.latest
-        self.latest = self
+        self.before = RouterAgent.latest
+        RouterAgent.latest = self
         self.after = None
 
     # Call Override(s)
