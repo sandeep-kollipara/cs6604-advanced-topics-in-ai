@@ -2,6 +2,9 @@
 
 from agents.loader_agent import LoaderAgent
 import agents.router_agent
+import warnings as wrn
+
+wrn.filterwarnings('ignore')
 
 
 if '__main__'.__eq__(__name__):

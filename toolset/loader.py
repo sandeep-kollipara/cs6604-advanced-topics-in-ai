@@ -24,7 +24,7 @@ def identify_and_load_file(filename: str) -> dict:
 
 
 def save_data_to_file(dataframe: pd.DataFrame, filename: str) -> dict:
-    dataframe.to_csv(r'/out/'+filename, index=False)
+    dataframe.to_csv(r'./out/'+filename, index=False)
     return 'File saved successfully.'
 
 
