@@ -1,5 +1,6 @@
 # *************** Dimensionality Reduction Tools ***************
 
+import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -15,7 +16,11 @@ def principal_component_analysis(dataframe, components) -> dict:
     dataframe_transformed = pd.DataFrame(data=X_transformed, 
                                          columns=['feature'+str(i+1) for i in range(X_transformed.shape[1])], 
                                          index = dataframe.index)
-    return dataframe_transformed
+    pca_expVarCumSum =  np.hstack([np.reshape(pca.get_feature_names_out(), (-1,1)), 
+                                   np.reshape(pca.explained_variance_ratio_, (-1,1))])#.cumsum(), (-1,1))])
+    df_pca_expVarCumSum = pd.DataFrame(data=pca_expVarCumSum, columns=['PrincipalCom', 'DepVarCumSum'])
+    return dataframe_transformed, {df_pca_expVarCumSum['PrincipalCom'].iloc[i] : 100*float(df_pca_expVarCumSum['DepVarCumSum'].iloc[i]) 
+                                   for i in range(len(df_pca_expVarCumSum))}
 
 
 def linear_discriminant_analysis(dataframe, y_target, components) -> dict: # Work-In-Progress

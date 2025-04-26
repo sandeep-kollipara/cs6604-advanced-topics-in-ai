@@ -2,13 +2,16 @@
 
 from agents.base_agent import BaseAgent
 import agents.dimreducer_agent
+import agents.featselector_agent
 import agents.loader_agent
 import agents.scaler_agent
 import agents.encoder_agent
 import agents.explorer_agent
 import agents.cleaner_agent
 import agents.dimreducer_agent
+import agents.featselector_agent
 from templates.routing import prompt
+import pandas as pd
 from pydantic import BaseModel, Field
 from langchain.tools import tool
 
@@ -66,13 +69,19 @@ class RouterAgent(BaseAgent):
                       dimension_reduction:'dimension_reduction',
                       feature_selection:'feature_selection',
                       manipulation:'manipulation'}
-        RouterAgent.tag = route_dict[1]
+        try:
+            RouterAgent.tag = route_dict[1]
+        except KeyError:
+            return 'stall' # This is the exception value for tag when none of the tools are selected for the user command.
         return route_dict[1] # This can be removed in production, waste of API call
     
     # Constructor(s)
     def __init__(self, dataframe):
         super().__init__(starter=prompt, tool_dict={'routing':self.__routing})
-        self.dataframe = dataframe
+        if type(dataframe) is not pd.DataFrame or type(dataframe) is str: # Exception handling in case of failed tool call
+            pass #self = RouterAgent.latest # Does not work like that
+        else:
+            self.dataframe = dataframe
         self.before = RouterAgent.latest
         RouterAgent.latest = self
         self.after = None
@@ -100,10 +109,12 @@ class RouterAgent(BaseAgent):
             callAgent = agents.encoder_agent.EncoderAgent(self.dataframe)
         elif self.tag == 'dimension_reduction':
             callAgent = agents.dimreducer_agent.DimReducerAgent(self.dataframe)
-        #elif self.tag == 'feature_selection':
-        #    callAgent = FeatSelectAgent()
+        elif self.tag == 'feature_selection':
+            callAgent = agents.featselector_agent.FeatSelectorAgent(self.dataframe)
         #elif self.tag == 'manipulation':
         #    callAgent = EvalAgent()
+        elif self.tag == 'stall': # Exception case handling: Do nothing!
+            callAgent = self
         else: return 'Error: RouterAgent malfunctioned'
         self.after = callAgent
         return callAgent

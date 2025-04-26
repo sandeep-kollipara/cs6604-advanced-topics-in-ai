@@ -39,7 +39,13 @@ class ExplorerAgent(BaseAgent):
 
     # Call Override(s)
     def __call__(self, message):
-        result = self.agent.invoke(message)
+        try:
+            result = self.agent.invoke(message)
+        except Exception as exc:
+            result = ''
+            return exc
+        except:
+            return 'Base Exception Error...'
         self.chat_history += [result]
         callAgent = agents.router_agent.RouterAgent(self.dataframe)
         return callAgent

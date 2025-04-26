@@ -33,7 +33,12 @@ class EncoderAgent(BaseAgent):
         """
         Identify categorical features in the dataframe and returns their column names and categories or unique classes within them
         """
-        categorical_features = identify_categorical_features(dataframe=EncoderAgent.dataframe)
+        try:
+            categorical_features = identify_categorical_features(dataframe=EncoderAgent.dataframe)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
         return str(categorical_features), {categorical_features[i]:[getattr(x, 'tolist', lambda: x)()  # Limit to max 15 classes/categories
                                                                     for x in list(EncoderAgent.dataframe.loc[:, categorical_features[i]].unique())[:15]] 
                                            for i in range(len(categorical_features))} # Unique classes/categories are not sorted
@@ -52,7 +57,13 @@ class EncoderAgent(BaseAgent):
         """
         Converts the categorical features of ordinal type with ordering or ranking or heirarchy within classes or categories for modelling
         """
-        EncoderAgent.dataframe, EncoderAgent.y_encoder = label_encoding(dataframe=EncoderAgent.dataframe, categorical_features=categorical_features, y_target=EncoderAgent.y_target)
+        try:
+            EncoderAgent.dataframe, EncoderAgent.y_encoder = label_encoding(dataframe=EncoderAgent.dataframe, categorical_features=categorical_features, y_target=EncoderAgent.y_target)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return EncoderAgent.dataframe
 
     @staticmethod
     @tool(args_schema=Encoding)
@@ -60,7 +71,13 @@ class EncoderAgent(BaseAgent):
         """
         Converts the categorical features of nominal type with no ordering or ranking or heirarchy within classes or categories for modelling
         """
-        EncoderAgent.dataframe, EncoderAgent.y_encoder = one_hot_encoding(dataframe=EncoderAgent.dataframe, categorical_features=categorical_features)
+        try:
+            EncoderAgent.dataframe, EncoderAgent.y_encoder = one_hot_encoding(dataframe=EncoderAgent.dataframe, categorical_features=categorical_features)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return EncoderAgent.dataframe
     
     # Constructor(s)
     def __init__(self, dataframe):

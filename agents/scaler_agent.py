@@ -33,8 +33,15 @@ class ScalerAgent(BaseAgent):
         """
         Identify numerical features in the dataframe and returns their column names and few random data samples within them
         """
-        numerical_features = identify_numerical_features(dataframe=ScalerAgent.dataframe)
-        return str(numerical_features), ScalerAgent.dataframe.loc[:, numerical_features].sort_values(by=numerical_features).head(10).to_string()
+        try:
+            numerical_features = identify_numerical_features(dataframe=ScalerAgent.dataframe)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return str(numerical_features), {numerical_features[i] : list(ScalerAgent.dataframe[numerical_features[i]].sort_values(ascending=True)[:10]) 
+                                         for i in range(len(numerical_features))}
+        #ScalerAgent.dataframe.loc[:, numerical_features].sort_values(by=numerical_features).head(10).to_string()
     
     @staticmethod
     @tool(args_schema=Scaling)
@@ -42,7 +49,13 @@ class ScalerAgent(BaseAgent):
         """
         Applies standardization or scaling to the numerical features of the dataframe
         """
-        ScalerAgent.dataframe, ScalerAgent.y_encoder = standardization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+        try:
+            ScalerAgent.dataframe, ScalerAgent.y_encoder = standardization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return ScalerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Scaling)
@@ -50,7 +63,13 @@ class ScalerAgent(BaseAgent):
         """
         Applies normalization to the numerical features of the dataframe
         """
-        ScalerAgent.dataframe, ScalerAgent.y_encoder = normalization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+        try:
+            ScalerAgent.dataframe, ScalerAgent.y_encoder = normalization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return ScalerAgent.dataframe
 
     # Constructor(s)
     def __init__(self, dataframe):

@@ -3,7 +3,7 @@
 from agents.base_agent import BaseAgent
 import agents.router_agent
 from toolset.dimreducer import principal_component_analysis, linear_discriminant_analysis
-from templates.scaling import prompt
+from templates.dimreduction import prompt
 from pydantic import BaseModel, Field
 from langchain.tools import tool
 
@@ -19,7 +19,7 @@ class DimReducer2(BaseModel):
 class DimReducerAgent(BaseAgent):
     """
     This is the DimReducer which conducts Dimensionality Reduction (PCA or LDA) on the features of a dataframe.
-    It is called by the RouterAgent upon receiving a data scaling task.
+    It is called by the RouterAgent upon receiving a dimensionality reduction task.
     """
 
     # Field(s) (Class)
@@ -33,7 +33,13 @@ class DimReducerAgent(BaseAgent):
         """
         Applies Principal Component Analysis (PCA) to retrieve the top components of the features with variance in the dataframe
         """
-        DimReducerAgent.dataframe = principal_component_analysis(dataframe=DimReducerAgent.dataframe, components=components)
+        try:
+            DimReducerAgent.dataframe, explaied_variance_dict = principal_component_analysis(dataframe=DimReducerAgent.dataframe, components=components)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return DimReducerAgent.dataframe, explaied_variance_dict
     
     @staticmethod
     @tool(args_schema=DimReducer2)
@@ -41,7 +47,13 @@ class DimReducerAgent(BaseAgent):
         """
         Applies Linear Discriminant Analysis (LDA) to retrieve the top components of the features with separation in the dataframe
         """
-        DimReducerAgent.dataframe = linear_discriminant_analysis(dataframe=DimReducerAgent.dataframe, components=components, y_target=y_target)
+        try:
+            DimReducerAgent.dataframe = linear_discriminant_analysis(dataframe=DimReducerAgent.dataframe, components=components, y_target=y_target)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return DimReducerAgent.dataframe
 
     # Constructor(s)
     def __init__(self, dataframe):

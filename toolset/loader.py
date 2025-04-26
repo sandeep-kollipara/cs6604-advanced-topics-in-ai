@@ -3,7 +3,8 @@
 import os
 import numpy as np
 import pandas as pd
-from langchain.embeddings.openai import OpenAIEmbeddings
+#from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 
 
 def identify_and_load_file(filename: str) -> dict:

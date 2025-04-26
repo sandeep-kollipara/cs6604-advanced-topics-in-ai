@@ -33,10 +33,16 @@ class LoaderAgent(BaseAgent):
     @tool(args_schema=Loading)
     def __identify_and_load_file(approx_filename, memo=''):
         """
-        Identifies the file with given filename and returns the closest match for filename if not found. If found, it loads and returns the dataframe
+        Identifies the file with given filename and loads the closest match for filename if found in the directory. \
+        Also receives any additional information provided by the user through the argument memo.
         """
-        LoaderAgent.dataframe = identify_and_load_file(approx_filename)
-        LoaderAgent.memo = memo
+        try:
+            LoaderAgent.dataframe = identify_and_load_file(approx_filename)
+            BaseAgent.memo = memo
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
         return f'File loaded successfully {LoaderAgent.dataframe} with memo: {LoaderAgent.memo}'
     
     @staticmethod
@@ -45,7 +51,13 @@ class LoaderAgent(BaseAgent):
         """
         Saves the dataframe as a CSV file with the provided filename
         """
-        save_data_to_file(LoaderAgent.dataframe, filename)
+        try:
+            save_data_to_file(LoaderAgent.dataframe, filename)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return 'File saved successfully'
 
 
     # Constructor(s)
