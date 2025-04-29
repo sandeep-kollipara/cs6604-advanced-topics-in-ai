@@ -14,7 +14,7 @@ if '__main__'.__eq__(__name__):
     prevAgent = nextAgent(user_input) # RouterAgent
     while nextAgent is not None:
         user_input = input('\nContinue talking to AI agent: ')
-        nextAgent = prevAgent(user_input) # WorkerAgent unless user fast-forwards or rewinds
+        nextAgent = prevAgent(user_input) # WorkerAgent unless user fast-forwards or rewinds or the agent stalls
         if type(nextAgent) == agents.router_agent.RouterAgent or nextAgent is None:
             prevAgent = nextAgent
             continue

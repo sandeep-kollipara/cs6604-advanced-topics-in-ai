@@ -140,8 +140,8 @@ def EliminateCorrelatedFeatures(dataframe, threshold, y_target): # Modified to e
                 newfeaturelist=newfeaturelist.drop(correlation_matrix['index'][i]);
             i+=1;
         j-=1;
-    print("Num. of features reduced to "+str(len(dataframe.columns))+\
-          " from "+str(dfcol)+" after Correlated Features Elimination.");
+    print("Num. of features reduced to "+str(len(dataframe.columns)+1)+\
+          " from "+str(dfcol+1)+" after Correlated Features Elimination.");
     dataframe = pandas.concat([dataframe, y_column], axis=1)
     return dataframe;
 

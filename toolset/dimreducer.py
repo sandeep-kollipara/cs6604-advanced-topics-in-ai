@@ -19,7 +19,7 @@ def principal_component_analysis(dataframe, components) -> dict:
                                          columns=['feature'+str(i+1) for i in range(X_transformed.shape[1])], 
                                          index = dataframe.index)
     pca_expVarCumSum =  np.hstack([np.reshape(pca.get_feature_names_out(), (-1,1)), 
-                                   np.reshape(pca.explained_variance_ratio_, (-1,1))])#.cumsum(), (-1,1))])
+                                   np.reshape(pca.explained_variance_ratio_.cumsum(), (-1,1))])
     df_pca_expVarCumSum = pd.DataFrame(data=pca_expVarCumSum, columns=['PrincipalCom', 'DepVarCumSum'])
     sns.barplot(df_pca_expVarCumSum, x="PrincipalCom", y="DepVarCumSum", color="y")
     plt.xlabel('Principal Component')
@@ -28,7 +28,7 @@ def principal_component_analysis(dataframe, components) -> dict:
     plt.title(label='Features vs. Dependent Variance')
     plt.tight_layout()
     plt.show()
-    return dataframe_transformed, {df_pca_expVarCumSum['PrincipalCom'].iloc[i] : 100*float(df_pca_expVarCumSum['DepVarCumSum'].iloc[i]) 
+    return dataframe_transformed, {df_pca_expVarCumSum['PrincipalCom'].iloc[i] : int(10000*float(np.round(df_pca_expVarCumSum['DepVarCumSum'].iloc[i], 5)))/100  
                                    for i in range(len(df_pca_expVarCumSum))}
 
 

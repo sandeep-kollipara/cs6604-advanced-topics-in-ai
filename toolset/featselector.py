@@ -32,7 +32,7 @@ def random_forest_analysis(dataframe, y_target):
         .reset_index(drop=False)\
         .rename({'index':'FeatName'}, axis=1)\
         .sort_values(by='FeatImport', ascending=False)
-    df_featImportance['FeatImportPerc'] = (df_featImportance['FeatImport']/df_featImportance['FeatImport'].sum()*100).apply(round)
+    df_featImportance['FeatImportPerc'] = (df_featImportance['FeatImport']/df_featImportance['FeatImport'].sum()*100).apply(round)#.cumsum()
     sns.barplot(df_featImportance, x="FeatImport", y="FeatName", color='g')
     plt.xlabel('Feature Importance')
     plt.ylabel('Feature Name')
@@ -88,7 +88,7 @@ def backward_stepwise_linear_regression(dataframe, y_target):#, test_size=0.2, t
         #                      np.round(lr_model_1.rsquared_adj, 3), 
         #                      droppedFeature, 
         #                      np.round(pValueOfDroppedFeature, 3)]])
-        r_squared_dict.update({droppedFeature : float(100*np.round(lr_model_1.rsquared_adj, 5))})
+        r_squared_dict.update({droppedFeature : int(float(10000*np.round(lr_model_1.rsquared_adj, 5)))/100})
     #return bslr_table
     return r_squared_dict
 
