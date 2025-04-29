@@ -22,6 +22,6 @@ if '__main__'.__eq__(__name__):
             try:
                 prevAgent = nextAgent(user_input)
             except TypeError:
-                print('No filename detected so ending program...')
+                print('Encountered error with loading file or by the tool.')
                 break
     print('\n*** Program End ***')

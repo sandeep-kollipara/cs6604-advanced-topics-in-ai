@@ -19,6 +19,7 @@ class Cleaning1(BaseModel):
 
 class Cleaning2(BaseModel):
     threshold: float = Field(..., description="A numerical value with decimals indicating the threshold or limit set between 0 and 1 including both")
+    y_target: str = Field(..., description="A string indicating the target column in the dataframe not involved in correlation filter")
 
 class Cleaning3(BaseModel):
     percentile: float = Field(..., description="A numerical value with decimals indicating the percentile set between 0 and 100 including both")
@@ -124,12 +125,12 @@ class CleanerAgent(BaseAgent):
     
     @staticmethod
     @tool(args_schema=Cleaning2)
-    def __EliminateCorrelatedFeatures(threshold):
+    def __EliminateCorrelatedFeatures(threshold, y_target): # Added y_target to avoid removing correlated features to target
         """
         Drops the features that highly correlated with another feature within the dataframe above a set threshold between 0 and 1 including both, usually the threshold is set at 0.8
         """
         try:
-            CleanerAgent.dataframe = EliminateCorrelatedFeatures(dataframe=CleanerAgent.dataframe, threshold=threshold)
+            CleanerAgent.dataframe = EliminateCorrelatedFeatures(dataframe=CleanerAgent.dataframe, threshold=threshold, y_target=y_target)
         except Exception as exc:
             return exc
         except:

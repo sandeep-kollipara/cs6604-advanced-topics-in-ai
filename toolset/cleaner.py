@@ -113,7 +113,9 @@ def EliminateFeaturesWithHighNonnumericUniqueValues(dataframe, percentage):#, ab
           " after Features with High Non-numeric Unique Values Elimination.");
     return dataframe;
 
-def EliminateCorrelatedFeatures(dataframe, threshold): # Modified to eliminate highly negative correlated features as well
+def EliminateCorrelatedFeatures(dataframe, threshold, y_target): # Modified to eliminate highly negative correlated features as well
+    y_column = dataframe[[y_target]].copy()
+    dataframe.drop(y_target, axis=1, inplace=True)
     correlation_matrix=dataframe.corr(numeric_only=True).reset_index(); # Added numeric_only=True
     dfcol=len(dataframe.columns);
     side=len(correlation_matrix);
@@ -140,6 +142,7 @@ def EliminateCorrelatedFeatures(dataframe, threshold): # Modified to eliminate h
         j-=1;
     print("Num. of features reduced to "+str(len(dataframe.columns))+\
           " from "+str(dfcol)+" after Correlated Features Elimination.");
+    dataframe = pandas.concat([dataframe, y_column], axis=1)
     return dataframe;
 
 def MissingValueTreatment(dataframe, features=[]): # 'features' added
