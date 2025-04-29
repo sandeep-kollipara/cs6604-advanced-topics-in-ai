@@ -46,7 +46,8 @@ class BaseAgent(BasicAgent):
 
     # Constructor(s)
     def __init__(self, starter="You are a data analyst with tools to preprocess and manage dataframes", tool_dict={}):
-        starter += (' '+self.memo) # Memo is attached with every system prompt
+        starter += '\n'
+        starter += self.memo # Memo is attached with every system prompt
         super().__init__(starter=starter, tool_dict=tool_dict) # Passthrough
         self.dataframe = pd.DataFrame() # Instance var
 
