@@ -3,7 +3,8 @@
 import os
 import numpy as np
 import pandas as pd
-from langchain.embeddings.openai import OpenAIEmbeddings
+#from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 
 
 def identify_and_load_file(filename: str) -> dict:
@@ -24,7 +25,7 @@ def identify_and_load_file(filename: str) -> dict:
 
 
 def save_data_to_file(dataframe: pd.DataFrame, filename: str) -> dict:
-    dataframe.to_csv(r'/out/'+filename, index=False)
+    dataframe.to_csv(r'./out/'+filename, index=False)
     return 'File saved successfully.'
 
 

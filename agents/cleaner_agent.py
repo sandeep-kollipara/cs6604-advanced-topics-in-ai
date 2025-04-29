@@ -44,7 +44,13 @@ class CleanerAgent(BaseAgent):
         """
         Drops the constant features that have the same value for all the rows of the dataframe
         """
-        CleanerAgent.dataframe = EliminateConstantFeatures(dataframe=CleanerAgent.dataframe)
+        try:
+            CleanerAgent.dataframe = EliminateConstantFeatures(dataframe=CleanerAgent.dataframe)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Cleaning1)
@@ -52,7 +58,13 @@ class CleanerAgent(BaseAgent):
         """
         Drops the features that have null values above a set percentage of all the rows of the dataframe, usually the percentage is set at 80
         """
-        CleanerAgent.dataframe = EliminateFeaturesWithHighNulls(dataframe=CleanerAgent.dataframe, percentage=percentage)
+        try:
+            CleanerAgent.dataframe = EliminateFeaturesWithHighNulls(dataframe=CleanerAgent.dataframe, percentage=percentage)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Void)
@@ -60,7 +72,13 @@ class CleanerAgent(BaseAgent):
         """
         Drops the identical features that are duplicate of another feature within the dataframe
         """
-        CleanerAgent.dataframe = EliminateIdenticalFeatures(dataframe=CleanerAgent.dataframe)
+        try:
+            CleanerAgent.dataframe = EliminateIdenticalFeatures(dataframe=CleanerAgent.dataframe)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Cleaning1)
@@ -68,7 +86,13 @@ class CleanerAgent(BaseAgent):
         """
         Drops the features that have zero values above a set percentage of all the rows of the dataframe, usually the percentage is set at 80
         """
-        CleanerAgent.dataframe = EliminateFeaturesWithHighZeroes(dataframe=CleanerAgent.dataframe, percentage=percentage)
+        try:
+            CleanerAgent.dataframe = EliminateFeaturesWithHighZeroes(dataframe=CleanerAgent.dataframe, percentage=percentage)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Void)
@@ -76,7 +100,13 @@ class CleanerAgent(BaseAgent):
         """
         Drops the features with close to zero variance across all the rows of the dataframe
         """
-        CleanerAgent.dataframe = EliminateFeaturesWithNearZeroVariance(dataframe=CleanerAgent.dataframe)
+        try:
+            CleanerAgent.dataframe = EliminateFeaturesWithNearZeroVariance(dataframe=CleanerAgent.dataframe)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Cleaning1)
@@ -84,7 +114,13 @@ class CleanerAgent(BaseAgent):
         """
         Drops the features that have high repetition of unique categorical or string values above a set percentage of all the rows of the dataframe, usually the percentage is set at 80
         """
-        CleanerAgent.dataframe = EliminateFeaturesWithHighNonnumericUniqueValues(dataframe=CleanerAgent.dataframe, percentage=percentage)
+        try:
+            CleanerAgent.dataframe = EliminateFeaturesWithHighNonnumericUniqueValues(dataframe=CleanerAgent.dataframe, percentage=percentage)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Cleaning2)
@@ -92,7 +128,13 @@ class CleanerAgent(BaseAgent):
         """
         Drops the features that highly correlated with another feature within the dataframe above a set threshold between 0 and 1 including both, usually the threshold is set at 0.8
         """
-        CleanerAgent.dataframe = EliminateCorrelatedFeatures(dataframe=CleanerAgent.dataframe, threshold=threshold)
+        try:
+            CleanerAgent.dataframe = EliminateCorrelatedFeatures(dataframe=CleanerAgent.dataframe, threshold=threshold)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=MVT)
@@ -100,7 +142,13 @@ class CleanerAgent(BaseAgent):
         """
         Applies Missing Value Treatment (MVT) to the selected features of the dataframe if provided and applies to all features if no argument is provided
         """
-        CleanerAgent.dataframe = MissingValueTreatment(dataframe=CleanerAgent.dataframe, features=features)
+        try:
+            CleanerAgent.dataframe = MissingValueTreatment(dataframe=CleanerAgent.dataframe, features=features)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Cleaning3)
@@ -108,7 +156,13 @@ class CleanerAgent(BaseAgent):
         """
         Applies Outlier Treatment to numerical features with significant deviation for the exteme percentiles among observations of the dataframe, usually the percentile is set at 1
         """
-        CleanerAgent.dataframe = OutlierTreatment(dataframe=CleanerAgent.dataframe, percentile=percentile) # arg is 'percentile' not 'percentage'
+        try:
+            CleanerAgent.dataframe = OutlierTreatment(dataframe=CleanerAgent.dataframe, percentile=percentile) # arg is 'percentile' not 'percentage'
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return CleanerAgent.dataframe
     
     # Constructor(s)
     def __init__(self, dataframe):

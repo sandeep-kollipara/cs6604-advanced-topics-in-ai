@@ -12,13 +12,16 @@ from langchain.agents import AgentExecutor
 from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain.agents.format_scratchpad.openai_functions import format_to_openai_functions
 from langchain.memory import ConversationBufferMemory # TO BE DEPRECATED, BUT IS THE ONLY COMPATIBLE OPTION
+import configparser
 from dotenv import load_dotenv, find_dotenv
 
 
 
 _ = load_dotenv(find_dotenv()) # read local .env file
 openai.api_key = os.environ['OPENAI_API_KEY']
-
+config = configparser.ConfigParser()
+config.read('config.ini')
+OPENAI_LLM = config.get('SETTINGS', 'OPENAI_LLM')
 
 
 class BasicAgent:
@@ -27,7 +30,7 @@ class BasicAgent:
         self.tool_dict = tool_dict.copy()
         tools = list(tool_dict.values())
         functions = [convert_to_openai_function(f) for f in tools]
-        model = ChatOpenAI(model='gpt-4o', temperature=0).bind(functions=functions)
+        model = ChatOpenAI(model=OPENAI_LLM, temperature=0).bind(functions=functions)
         prompt = ChatPromptTemplate.from_messages([
             ("system", f"{starter}"),
             ("user", "{input}"),
@@ -81,7 +84,7 @@ class ChatAgent:
         self.tool_dict = tool_dict
         tools = list(tool_dict.values())
         functions = [convert_to_openai_function(f) for f in tools]
-        model = ChatOpenAI(model='gpt-4o', temperature=0).bind(functions=functions)
+        model = ChatOpenAI(model=OPENAI_LLM, temperature=0).bind(functions=functions)
         prompt = ChatPromptTemplate.from_messages([
             ("system", f"{starter}"),
             MessagesPlaceholder(variable_name="chat_history"),  # Used with ConversationalBufferMemory

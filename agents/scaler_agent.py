@@ -7,6 +7,9 @@ from templates.scaling import prompt
 from pydantic import BaseModel, Field
 from typing import List, Optional, Any
 from langchain.tools import tool
+import random as rand
+
+rand.seed(6604)
 
 
 class Void(BaseModel):
@@ -33,8 +36,17 @@ class ScalerAgent(BaseAgent):
         """
         Identify numerical features in the dataframe and returns their column names and few random data samples within them
         """
-        numerical_features = identify_numerical_features(dataframe=ScalerAgent.dataframe)
-        return str(numerical_features), ScalerAgent.dataframe.loc[:, numerical_features].sort_values(by=numerical_features).head(10).to_string()
+        try:
+            numerical_features = identify_numerical_features(dataframe=ScalerAgent.dataframe)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        random_sample_indices = list(ScalerAgent.dataframe.index[[rand.randint(0, len(ScalerAgent.dataframe)) for _ in range(5)]])
+        return str(numerical_features), {numerical_features[i] : (list(ScalerAgent.dataframe[numerical_features[i]].sort_values(ascending=True))[:5]#[:10])
+                                                                  + list(ScalerAgent.dataframe[numerical_features[i]][random_sample_indices]))
+                                         for i in range(len(numerical_features))}
+        #ScalerAgent.dataframe.loc[:, numerical_features].sort_values(by=numerical_features).head(10).to_string()
     
     @staticmethod
     @tool(args_schema=Scaling)
@@ -42,7 +54,13 @@ class ScalerAgent(BaseAgent):
         """
         Applies standardization or scaling to the numerical features of the dataframe
         """
-        ScalerAgent.dataframe, ScalerAgent.y_encoder = standardization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+        try:
+            ScalerAgent.dataframe, ScalerAgent.y_encoder = standardization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return ScalerAgent.dataframe
     
     @staticmethod
     @tool(args_schema=Scaling)
@@ -50,7 +68,13 @@ class ScalerAgent(BaseAgent):
         """
         Applies normalization to the numerical features of the dataframe
         """
-        ScalerAgent.dataframe, ScalerAgent.y_encoder = normalization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+        try:
+            ScalerAgent.dataframe, ScalerAgent.y_encoder = normalization(dataframe=ScalerAgent.dataframe, numerical_features=numerical_features)
+        except Exception as exc:
+            return exc
+        except:
+            return 'Base Exception Error...'
+        return ScalerAgent.dataframe
 
     # Constructor(s)
     def __init__(self, dataframe):
@@ -61,6 +85,7 @@ class ScalerAgent(BaseAgent):
 
     # Call Override(s)
     def __call__(self, message):
+        message += '\nThe columns currently in the dataframe are: ' + str(list(self.dataframe.columns))
         super().__call__(message)
         self.dataframe = ScalerAgent.dataframe  # Apparently both do not reference the same variable
         callAgent = agents.router_agent.RouterAgent(self.dataframe)

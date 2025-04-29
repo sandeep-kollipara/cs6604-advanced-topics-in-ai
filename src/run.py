@@ -1,10 +1,27 @@
 # *************** Main Workflow ***************
 
-from agents.router_agent import RouterAgent
+from agents.loader_agent import LoaderAgent
+import agents.router_agent
+import warnings as wrn
+
+wrn.filterwarnings('ignore')
 
 
 if '__main__'.__eq__(__name__):
 
-    router = RouterAgent()
-    user_input = input('User command:')
-    router(user_input) # should find the appropriate agent and pass the command to it
+    user_input = input('\nTalk to the AI agent: ')
+    nextAgent = LoaderAgent(None)
+    prevAgent = nextAgent(user_input) # RouterAgent
+    while nextAgent is not None:
+        user_input = input('\nContinue talking to AI agent: ')
+        nextAgent = prevAgent(user_input) # WorkerAgent unless user fast-forwards or rewinds
+        if type(nextAgent) == agents.router_agent.RouterAgent or nextAgent is None:
+            prevAgent = nextAgent
+            continue
+        else:
+            try:
+                prevAgent = nextAgent(user_input)
+            except TypeError:
+                print('No filename detected so ending program...')
+                break
+    print('\n*** Program End ***')
