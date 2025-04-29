@@ -1,29 +1,41 @@
-# *************** CodeAct Agent ***************
+# *************** CodeAct Agent (Unused for project, potential future work!) ***************
 
 from agents.base_agent import BaseAgent
 import agents.router_agent
-from toolset.manipulator import add, subtract, multiply, divide
+from toolset.manipulator import groupby_aggregate, pivot_table, transpose_df, \
+    select_columns, drop_columns, discretize_column, rename_column #add, subtract, multiply, divide
 import os
 import openai
+import asyncio
 from llama_index.llms.openai import OpenAI
-from dotenv import load_dotenv, find_dotenv
-
-
-_ = load_dotenv(find_dotenv()) # read local .env file
-openai.api_key = os.environ['OPENAI_API_KEY']
-
-# Configure the LLM
-llm = OpenAI(model="gpt-4o", api_key=openai.api_key)
-
-
-# =================================================
-
-
 from typing import Any, Dict, Tuple
 import io
 import contextlib
 import ast
 import traceback
+from llama_index.core.agent.workflow import CodeActAgent
+from llama_index.core.workflow import Context
+from llama_index.core.agent.workflow import (
+    ToolCall,
+    ToolCallResult,
+    AgentStream,
+)
+import configparser
+from dotenv import load_dotenv, find_dotenv
+
+
+_ = load_dotenv(find_dotenv()) # read local .env file
+openai.api_key = os.environ['OPENAI_API_KEY']
+config = configparser.ConfigParser()
+OPENAI_LLM = config.get('SETTINGS', 'OPENAI_LLM')
+
+# Configure the LLM
+llm = OpenAI(model=OPENAI_LLM, api_key=openai.api_key)
+
+
+# =================================================
+# ================== Definition ===================
+# =================================================
 
 class SimpleCodeExecutor:
     """
@@ -110,8 +122,9 @@ class SimpleCodeExecutor:
 
 
 # =================================================
-
-
+# ================= Initializing ==================
+# =================================================
+'''
 code_executor = SimpleCodeExecutor(
     # give access to our functions defined above
     locals={
@@ -126,15 +139,12 @@ code_executor = SimpleCodeExecutor(
         # give access to numpy
         "np": __import__("numpy"),
         "pd": __import__("pandas"),
+        "sk": __import__("sklearn"),
+        "sm": __import__("statsmodels"),
+        "sns": __import__("seaborn"),
+        "matplotlib": __import__("matplotlib"),
     },
 )
-
-
-# =================================================
-
-
-from llama_index.core.agent.workflow import CodeActAgent
-from llama_index.core.workflow import Context
 
 agent = CodeActAgent(
     code_execute_fn=code_executor.execute,
@@ -144,10 +154,6 @@ agent = CodeActAgent(
 
 # context to hold the agent's session/state/chat history
 ctx = Context(agent)
-
-
-# =================================================
-
 
 from llama_index.core.agent.workflow import (
     ToolCall,
@@ -170,45 +176,104 @@ async def run_agent_verbose(agent, ctx, query):
             print(f"{event.delta}", end="", flush=True)
 
     return await handler
+'''
+# =================================================
+# ==================== Calling ====================
+# =================================================
+'''
+#response = await run_agent_verbose(
+#    agent, ctx, "Calculate the sum of all numbers from 1 to 10"
+#)
 
+async def call_agent(user_input):
+    response = await run_agent_verbose(
+        agent, ctx, user_input
+        )
+    return response
 
+response = asyncio.run(call_agent("Calculate the sum of all numbers from 1 to 10"))
+print(response)
+'''
 # =================================================
 
-
-response = await run_agent_verbose(
-    agent, ctx, "Calculate the sum of all numbers from 1 to 10"
-)
-
-
-# =================================================
-
-
-class CodeActAgent(BaseAgent):
+class CodeactAgent(BaseAgent):
     """
-    This is LangChain's CodeActAgent which we borrow to conduct Data Manipulation and Transformation on the dataframe passed to it.
+    This is LlamaIndex's CodeActAgent which we borrow to conduct Data Manipulation and Transformation on the dataframe passed to it.
     It is called by the RouterAgent upon receiving a data manipulation task.
     """
 
     # Field(s) (Class)
+    ctx = None
+    agent = None
 
     # Public Method(s)
+    async def run_agent_verbose(agent, ctx, query):
+        handler = agent.run(query, ctx=ctx)
+        print(f"User:  {query}")
+        async for event in handler.stream_events():
+            if isinstance(event, ToolCallResult):
+                print(
+                    f"\n-----------\nCode execution result:\n{event.tool_output}"
+                )
+            elif isinstance(event, ToolCall):
+                print(f"\n-----------\nParsed code:\n{event.tool_kwargs['code']}")
+            elif isinstance(event, AgentStream):
+                print(f"{event.delta}", end="", flush=True)
 
+        return await handler
+
+    async def call_agent(user_input):
+        response = await CodeactAgent.run_agent_verbose(
+            CodeactAgent.agent, CodeactAgent.ctx, user_input
+            )
+        return response
+    
     # Private Method(s)
     
     # Constructor(s)
     def __init__(self, dataframe):
         self.dataframe = dataframe
-        llm = ChatOpenAI(model='gpt-4o', temperature=0)
-        self.agent = create_pandas_dataframe_agent(df=dataframe, 
-                                                   llm=llm, 
-                                                   allow_dangerous_code=True, 
-                                                   verbose=True, 
-                                                   agent_type=AgentType.OPENAI_FUNCTIONS)
+        code_executor = SimpleCodeExecutor(
+            # give access to our functions defined above
+            locals={
+                #"dataframe" : self.dataframe,
+                "groupby_aggregate": groupby_aggregate,
+                "pivot_table": pivot_table,
+                "transpose_df": transpose_df,
+                "select_columns": select_columns,
+                "drop_columns": drop_columns,
+                "discretize_column": discretize_column,
+                "rename_column": rename_column,
+            },
+            globals={
+                # give access to all builtins
+                "__builtins__": __builtins__,
+                # give access to numpy
+                "np": __import__("numpy"),
+                "pd": __import__("pandas"),
+                "sk": __import__("sklearn"),
+                "sm": __import__("statsmodels"),
+                "sns": __import__("seaborn"),
+                "matplotlib": __import__("matplotlib"),
+            },
+        )
+
+        CodeactAgent.agent = CodeActAgent(
+            code_execute_fn=code_executor.execute,
+            llm=llm,
+            tools=[groupby_aggregate, pivot_table, transpose_df, \
+                   select_columns, drop_columns, discretize_column, rename_column],#[add, subtract, multiply, divide],
+        )
+
+        # context to hold the agent's session/state/chat history
+        CodeactAgent.ctx = Context(CodeactAgent.agent)
+        # End of initialization
 
     # Call Override(s)
     def __call__(self, message):
         try:
-            result = self.agent.invoke(message)
+            #result = self.agent.invoke(message)
+            result = asyncio.run(CodeactAgent.call_agent(message))
         except Exception as exc:
             result = ''
             return exc
@@ -221,3 +286,4 @@ class CodeActAgent(BaseAgent):
     # String Override(s)
     def __str__(self):
         print("Text temporary.")
+

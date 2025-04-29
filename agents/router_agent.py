@@ -10,6 +10,7 @@ import agents.explorer_agent
 import agents.cleaner_agent
 import agents.dimreducer_agent
 import agents.featselector_agent
+#import agents.codeact_agent
 from templates.routing import prompt
 import pandas as pd
 from pydantic import BaseModel, Field
@@ -88,6 +89,7 @@ class RouterAgent(BaseAgent):
 
     # Call Override(s)
     def __call__(self, message):
+        message += '\nThe columns currently in the dataframe are: ' + str(list(self.dataframe.columns))
         super().__call__(message)
         if self.tag == 'end':
             return None # Exit in the __main__
@@ -111,8 +113,9 @@ class RouterAgent(BaseAgent):
             callAgent = agents.dimreducer_agent.DimReducerAgent(self.dataframe)
         elif self.tag == 'feature_selection':
             callAgent = agents.featselector_agent.FeatSelectorAgent(self.dataframe)
-        #elif self.tag == 'manipulation':
-        #    callAgent = EvalAgent()
+        elif self.tag == 'manipulation': # Redirecting to ExplorerAgent as CodeactAgent doesn't currently accept dataframes as arguments
+            #callAgent = agents.codeact_agent.CodeactAgent(self.dataframe) #EvalAgent()
+            callAgent = agents.explorer_agent.ExplorerAgent(self.dataframe)
         elif self.tag == 'stall': # Exception case handling: Do nothing!
             callAgent = self
         else: return 'Error: RouterAgent malfunctioned'

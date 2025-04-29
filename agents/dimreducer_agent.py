@@ -63,6 +63,7 @@ class DimReducerAgent(BaseAgent):
 
     # Call Override(s)
     def __call__(self, message):
+        message += '\nThe columns currently in the dataframe are: ' + str(list(self.dataframe.columns))
         super().__call__(message)
         self.dataframe = DimReducerAgent.dataframe  # Apparently both do not reference the same variable
         callAgent = agents.router_agent.RouterAgent(self.dataframe)

@@ -3,6 +3,8 @@
 from agents.react_agent import *
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 import statsmodels.api as sm
 #from prettytable import PrettyTable
 from sklearn.ensemble import RandomForestRegressor
@@ -31,6 +33,13 @@ def random_forest_analysis(dataframe, y_target):
         .rename({'index':'FeatName'}, axis=1)\
         .sort_values(by='FeatImport', ascending=False)
     df_featImportance['FeatImportPerc'] = (df_featImportance['FeatImport']/df_featImportance['FeatImport'].sum()*100).apply(round)
+    sns.barplot(df_featImportance, x="FeatImport", y="FeatName", color='g')
+    plt.xlabel('Feature Importance')
+    plt.ylabel('Feature Name')
+    plt.grid(axis='both')
+    plt.title(label='Feature vs. Importance')
+    plt.tight_layout()
+    plt.show()
     return {df_featImportance['FeatName'].iloc[i]:float(df_featImportance['FeatImportPerc'].iloc[i]) 
             for i in range(len(df_featImportance))}
 

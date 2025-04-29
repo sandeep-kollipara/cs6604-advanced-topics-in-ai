@@ -19,5 +19,9 @@ if '__main__'.__eq__(__name__):
             prevAgent = nextAgent
             continue
         else:
-            prevAgent = nextAgent(user_input)
+            try:
+                prevAgent = nextAgent(user_input)
+            except TypeError:
+                print('No filename detected so ending program...')
+                break
     print('\n*** Program End ***')
