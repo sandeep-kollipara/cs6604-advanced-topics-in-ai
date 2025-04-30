@@ -7,6 +7,7 @@ from templates.scaling import prompt
 from pydantic import BaseModel, Field
 from typing import List, Optional, Any
 from langchain.tools import tool
+from scipy.stats import normaltest
 import random as rand
 
 rand.seed(6604)
@@ -43,9 +44,11 @@ class ScalerAgent(BaseAgent):
         except:
             return 'Base Exception Error...'
         random_sample_indices = list(ScalerAgent.dataframe.index[[rand.randint(0, len(ScalerAgent.dataframe)) for _ in range(5)]])
-        return str(numerical_features), {numerical_features[i] : (list(ScalerAgent.dataframe[numerical_features[i]].sort_values(ascending=True))[:5]#[:10])
-                                                                  + list(ScalerAgent.dataframe[numerical_features[i]][random_sample_indices]))
+        return str(numerical_features), {numerical_features[i]: round(float(normaltest(ScalerAgent.dataframe[numerical_features[i]].to_numpy()).pvalue), 3) \
                                          for i in range(len(numerical_features))}
+                                         #{numerical_features[i] : (list(ScalerAgent.dataframe[numerical_features[i]].sort_values(ascending=True))[:5]#[:10])
+                                         #                         + list(ScalerAgent.dataframe[numerical_features[i]][random_sample_indices]))
+                                         #for i in range(len(numerical_features))}
         #ScalerAgent.dataframe.loc[:, numerical_features].sort_values(by=numerical_features).head(10).to_string()
     
     @staticmethod

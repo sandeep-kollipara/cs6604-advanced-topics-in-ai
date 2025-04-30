@@ -1,7 +1,7 @@
 # *************** Data Standardization Tools ***************
 
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, Normalizer
+from sklearn.preprocessing import StandardScaler, MinMaxScaler #Normalizer
 
 
 def identify_numerical_features(dataframe) -> list[str]:
@@ -38,10 +38,10 @@ def standardization(dataframe, numerical_features) -> dict:
 
 
 def normalization(dataframe, numerical_features) -> dict:
-    scaler = Normalizer()
-    scaler.fit(dataframe.loc[:, numerical_features])
-    array_scaled = scaler.transform(dataframe.loc[:,numerical_features])
-    dataframe_total = pd.concat([pd.DataFrame(array_scaled,
+    scaler = MinMaxScaler() #Normalizer() # WARNING: Normalizer applies on rows not columns
+    scaler.fit(dataframe.loc[:, numerical_features])#.transpose())
+    array_scaled = scaler.transform(dataframe.loc[:,numerical_features])#.transpose())
+    dataframe_total = pd.concat([pd.DataFrame(array_scaled,#.transpose(),
                                               columns=numerical_features,
                                               index=dataframe.index),
                                  dataframe.loc[:, [col for col in dataframe.columns if col not in numerical_features]]], 
